@@ -33,7 +33,11 @@ def init_server():
     The Runtime Bridge server will call this.
     """
 
-    return api_response()
+    pw = os_util.change_password()
+
+    return api_response({
+        'pw': pw
+    })
 
 
 @bp.route('/execute')
