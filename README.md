@@ -1,2 +1,3 @@
-# runtime-agent
-Runtime Service Agent that lives in containers
+# Runtime-Agent
+Runtime Agent Service living in each container that manages its server and communicates with remote servers 
+
