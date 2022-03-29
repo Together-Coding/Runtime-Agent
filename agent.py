@@ -1,3 +1,4 @@
+import uvicorn
 import baby_sitter
 from server import app
 
@@ -7,7 +8,7 @@ def main():
     baby_sitter.run()
 
     # Start blocking HTTP server
-    app.run('0.0.0.0', port=8989)
+    uvicorn.run(app)
 
 
 if __name__ == '__main__':

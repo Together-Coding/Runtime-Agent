@@ -1,21 +1,20 @@
-import flask as fl
-from flask import Flask, Blueprint
+from fastapi import APIRouter
 
 from server.utils import os_util
-from server.utils.response import api_response, api_error_response
+from server.utils.response import api_response
 
-bp = Blueprint('main', __name__, url_prefix='/')
+router = APIRouter()
+
+# TODO 어떤 인증을 거쳐서 bridge 로부터
+#  "이 서버에서만 사용할 임시 키"를 받아서 사용하는게 더 안전할 듯
 
 # FIXME
 TEMP_DB = {}
 
 
-def init(app: Flask):
-    app.register_blueprint(bp)
-
-
-@bp.route('/ping')
+@router.get('/ping')
 def pong():
+    # Return useful values depending on its platform (local/container/...)
     # IP address ?
     # Docker image information ?
     # Available languages?
@@ -25,7 +24,7 @@ def pong():
     })
 
 
-@bp.route('/init')
+@router.post('/init')
 def init_server():
     """
     TODO
@@ -40,7 +39,7 @@ def init_server():
     })
 
 
-@bp.route('/execute')
+@router.post('/execute')
 def execute_command():
     """
     TODO
@@ -56,7 +55,7 @@ def execute_command():
     return api_response({})
 
 
-@bp.route('/execute/suspend')
+@router.post('/execute/suspend')
 def suspend_execution():
     """
     TODO

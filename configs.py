@@ -1,8 +1,19 @@
 import os
 
+from pydantic import BaseSettings
 
-DEBUG = True
 
-AGENT_DIRECTORY = os.getcwd() if DEBUG else '/usr/src/agent'
-USERNAME = 'together'
-DEFAULT_WORKING_DIRECTORY = os.getcwd() if DEBUG else '/usr/src/app'
+class GlobalSettings(BaseSettings):
+    DEBUG: bool = True
+
+
+global_settings = GlobalSettings()
+
+
+class Settings(BaseSettings):
+    AGENT_DIRECTORY: str = os.getcwd() if global_settings.DEBUG else '/usr/src/agent'
+    USERNAME: str = 'together'
+    DEFAULT_WORKING_DIRECTORY: str = os.getcwd() if global_settings.DEBUG else '/usr/src/app'
+
+
+settings = Settings()

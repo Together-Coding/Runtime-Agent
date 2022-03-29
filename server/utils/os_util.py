@@ -3,7 +3,7 @@ from subprocess import TimeoutExpired
 from typing import Optional
 
 from server.utils.etc import rand_string
-import configs
+from configs import settings
 
 
 def change_password() -> Optional[str]:
@@ -12,7 +12,7 @@ def change_password() -> Optional[str]:
     When None is returned, the client must re-call this function
     """
 
-    cmd = ['/usr/bin/passwd', configs.USERNAME]
+    cmd = ['/usr/bin/passwd', settings.USERNAME]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
     pw = rand_string(32)
