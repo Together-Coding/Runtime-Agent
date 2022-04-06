@@ -15,5 +15,6 @@ class Settings(BaseSettings):
     USERNAME: str = 'together'
     DEFAULT_WORKING_DIRECTORY: str = os.getcwd() if global_settings.DEBUG else '/usr/src/app'
 
+    API_URL = 'http://api.together-coding.com'  # FIXME use HTTPS
 
 settings = Settings()
