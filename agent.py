@@ -1,12 +1,12 @@
 import uvicorn
 import baby_sitter
-from server import app
+from server import sio_app as app
 
+
+# Start monitoring
+# baby_sitter.run()
 
 def main():
-    # Start monitoring
-    baby_sitter.run()
-
     # Start blocking HTTP server
     uvicorn.run(app)
 
