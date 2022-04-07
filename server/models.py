@@ -10,7 +10,7 @@ class User:
     @property
     def key(self):
         md5 = hashlib.md5()
-        md5.update(f'{self.user_id}.{self.ip}'.encode())
+        md5.update(f'{self.user_id}{self.ip}'.encode())
         return md5.hexdigest()
 
 
@@ -25,7 +25,7 @@ class ConnectionInfo:
     @property
     def key(self):
         md5 = hashlib.md5()
-        md5.update(f'{self.user.key}:{self.src}:{self.dest}:{self.port}'.encode())
+        md5.update(f'{self.user.key}{self.src}{self.dest}{self.ssh_user}{self.port}'.encode())
         return md5.hexdigest()
 
     def __str__(self):

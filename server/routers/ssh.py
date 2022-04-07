@@ -6,9 +6,10 @@ from fastapi import APIRouter
 from configs import settings
 from server import sio
 from server.utils import ws_session
-from server.websocket import InEvent, OutEvent
+from server.websocket import InEvent, OutEvent, ErrorType
 from server.models import User
 from server.utils.ssh import ssh_connect, SSHWorker, Reason
+from server.utils.exceptions import SSHConnectionException
 
 router = APIRouter(prefix='/ssh')
 
@@ -18,7 +19,7 @@ def ws_auth_required(func):
     async def decorated(sid, data):
         if not (await is_valid(sid)):
             await sio.emit(OutEvent.ERROR,
-                           {'type': 'auth', 'message': 'Not authorized'},
+                           {'type': ErrorType.AUTH, 'message': 'Not authorized'},
                            room=sid)
             return
 
@@ -54,7 +55,7 @@ async def authenticate(sid, data):
 
     if not token:
         await sio.emit(OutEvent.ERROR,
-                       {'type': 'missing field', 'message': '`token` is missing'},
+                       {'type': ErrorType.MISSING_FIELD, 'message': '`token` is missing'},
                        room=sid)
         return
 
@@ -76,7 +77,7 @@ async def authenticate(sid, data):
         resp_data = resp.json()
     except requests.HTTPError:
         await sio.emit(OutEvent.ERROR,
-                       {'type': 'common', 'message': 'Try again later'},
+                       {'type': ErrorType.COMMON, 'message': 'Try again later'},
                        room=sid)
         return
 
@@ -88,7 +89,7 @@ async def authenticate(sid, data):
         # Clear session data except IP
         await ws_session.clear(sid, ['ip'])
         await sio.emit(OutEvent.ERROR,
-                       {'type': 'auth', 'message': 'Invalid token'},
+                       {'type': ErrorType.AUTH, 'message': 'Invalid token'},
                        room=sid)
 
 
@@ -108,17 +109,25 @@ async def connect_to_ssh(sid, data=None):
         'cont_port': 22,
     }
 
-    ssh_worker = ssh_connect(sio,
-                             user,
-                             ssh_data['cont_ip'],
-                             ssh_data['cont_user'],
-                             ssh_data['cont_auth_type'],
-                             ssh_data['cont_auth'],
-                             ssh_data['cont_port'])
-    ssh_worker.sio_accepted(sid)
-    await ws_session.update(sid, {'ssh': ssh_worker})
+    try:
+        ssh_worker = ssh_connect(sio,
+                                 user,
+                                 ssh_data['cont_ip'],
+                                 ssh_data['cont_user'],
+                                 ssh_data['cont_auth_type'],
+                                 ssh_data['cont_auth'],
+                                 ssh_data['cont_port'])
+        ssh_worker.sio_accepted(sid)
+        await ws_session.update(sid, {'ssh': ssh_worker})
+        return await ssh_worker.run()
+    except SSHConnectionException as e:
+        message = str(e)
+    except:
+        message = 'Cannot connect to the SSH server.'
 
-    await ssh_worker.run()
+    await sio.emit(OutEvent.ERROR,
+                   {'type': ErrorType.SSH, 'message': message},
+                   room=sid)
 
 
 @sio.on(InEvent.SSH)

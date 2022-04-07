@@ -11,8 +11,6 @@ from server.websocket import create_websocket
 app = FastAPI()
 sio, sio_app = create_websocket(app)
 
-including_routers = []
-
 for router_mod in routers.__all__:
     router = importlib.import_module(f'.routers.{router_mod}', package=__name__)
     app.include_router(router.router)

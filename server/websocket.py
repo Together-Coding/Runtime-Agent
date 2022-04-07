@@ -20,3 +20,11 @@ class OutEvent:
     AUTHENTICATE = 'AUTHENTICATE'
     SSH_RELAY = 'SSH_RELAY'
     SSH_DOWN = 'SSH_DOWN'
+
+
+class ErrorType:
+    AUTH = 'auth'
+    UNKNOWN = 'unknown'
+    MISSING_FIELD = 'missing field'
+    COMMON = 'common'
+    SSH = 'ssh'

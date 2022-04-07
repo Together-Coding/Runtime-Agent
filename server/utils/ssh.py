@@ -16,7 +16,7 @@ from paramiko.channel import Channel
 
 from server import sio
 from server.utils import ws_session
-from server.utils.exceptions import SSHStopRetryException
+from server.utils.exceptions import SSHStopRetryException, SSHConnectionException
 from server.models import User, ConnectionInfo
 from server.websocket import InEvent, OutEvent
 
@@ -80,7 +80,6 @@ class SSHWorker:
 
     @property
     def is_reusable(self) -> bool:
-        print('#####################', self.channel.active, not self.channel.closed)
         return self.channel.active and not self.channel.closed
 
     def destruct(self):
@@ -178,7 +177,6 @@ class SSHWorker:
             await self.cleanup(Reason.SSH_DOWN, True)
         except (IOError, socket.error, socket.timeout) as e:
             # SSH connection went wrong
-            print(e)
             pass
 
     async def recv_from_ssh(self):
@@ -199,14 +197,17 @@ class SSHWorker:
                     continue
 
                 await self._emit(OutEvent.SSH_RELAY, data)
-                print(data)
             except KeyboardInterrupt:
                 reason = Reason.SERVER_DOWN
                 break
             except (OSError, IOError):
                 # including socket.timeout
                 continue
+            except SSHStopRetryException:
+                reason = Reason.SSH_DOWN
+                break
             except:
+                reason = 'Unknown error'
                 break
 
         await self.cleanup(reason, send_close)
@@ -238,10 +239,10 @@ def ssh_connect(
     :return:
     """
     if auth_type != 'password':
-        raise Exception(Reason.SSH_AUTH_NOT_SUPPORT.format(auth_type))
+        raise SSHConnectionException(Reason.SSH_AUTH_NOT_SUPPORT.format(auth_type))
 
     if len(ssh_clients[str(user)]) > MAX_SSH_CONNECTION:
-        raise Exception(Reason.SSH_TOO_MANY)
+        raise SSHConnectionException(Reason.SSH_TOO_MANY)
 
     # When there is already connected ssh client disconnected with the user,
     # reuse that ssh client.
@@ -251,7 +252,6 @@ def ssh_connect(
 
     for worker in ssh_clients[connection_info.key].copy():
         if worker.status == WorkerStatus.DISCONNECTED:
-            print(worker)
             if worker.is_reusable:
                 worker.setup_recycle(sid, connection_info)
                 worker.sio_accepted(sid)
@@ -275,13 +275,12 @@ def ssh_connect(
                        )
 
     except paramiko.AuthenticationException:
-        raise Exception(Reason.SSH_AUTH_FAIL)
+        raise SSHConnectionException(Reason.SSH_AUTH_FAIL)
     except Exception as e:
-        raise Exception(Reason.SSH_FAIL)
+        raise SSHConnectionException(Reason.SSH_FAIL)
 
     ssh_worker = SSHWorker(sid, connection_info, client)
     ssh_worker.channel.settimeout(0)
 
     ssh_clients[connection_info.key].add(ssh_worker)
-    print(ssh_clients)  # FIXME DELETE
     return ssh_worker

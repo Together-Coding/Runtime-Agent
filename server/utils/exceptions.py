@@ -17,3 +17,7 @@ class MissingRequiredException(Exception):
 
 class SSHStopRetryException(Exception):
     pass
+
+
+class SSHConnectionException(Exception):
+    pass
