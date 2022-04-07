@@ -13,3 +13,7 @@ class MissingRequiredException(Exception):
 
     def response(self):
         return api_error_response(self.error, str(self), status_code=self.status_code)
+
+
+class SSHStopRetryException(Exception):
+    pass

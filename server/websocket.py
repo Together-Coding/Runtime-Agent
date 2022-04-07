@@ -10,11 +10,13 @@ def create_websocket(app: FastAPI):
 class InEvent:
     SSH_CONNECT = 'SSH_CONNECT'  # SSH connection request
     SSH = 'SSH'  # Communicate with SSH terminal
+    SSH_RESIZE = 'SSH_RESIZE'  # Resize pty
     AUTHENTICATE = 'AUTHENTICATE'
 
 
 class OutEvent:
     MESSAGE = 'MESSAGE'
     ERROR = 'ERROR'
-    SSH_REFLECT = 'SSH_REFLECT'
     AUTHENTICATE = 'AUTHENTICATE'
+    SSH_RELAY = 'SSH_RELAY'
+    SSH_DOWN = 'SSH_DOWN'
