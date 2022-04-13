@@ -1,0 +1,45 @@
+# This workflow uploads source code of this project to the AWS S3 to be
+# downloaded into 'runtime-containers'.
+
+name: Upload To AWS S3 For Prod
+on:
+  pull_request:
+    types: [ closed ]
+    branches:
+      - main
+
+env:
+  AWS_ROLE: ${{ secrets.AWS_ROLE }}
+  AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ZIP_NAME: "runtime-agent.zip"
+  AWS_FOLDER: "prod"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # When PR is merged, upload for production usage
+  Upload-For-Prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+
+      # Configure AWS
+      - uses: unfor19/install-aws-cli-action@v1.0.2  # For local test using `act`
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-session-name: RuntimeAgentUploadForDev
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Upload
+      - name: Zip project
+        run: |
+          rm ${{ env.ZIP_NAME }} 2> /dev/null || true
+          zip -r ${{ env.ZIP_NAME }} * -x@.github/workflows/upload_exclude.lst
+      - name: Upload to S3
+        run: aws s3 cp ${{ env.ZIP_NAME }} s3://toco-runtime/dev/

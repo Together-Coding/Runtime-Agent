@@ -1,0 +1,6 @@
+.github/*
+dump/*
+__pycache__/*
+*.pyc
+.git/*
+.idea/*
