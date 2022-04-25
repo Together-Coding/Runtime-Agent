@@ -4,7 +4,7 @@ import socket
 import json
 import asyncio
 from enum import Enum
-from typing import Dict, Set, Any
+from typing import Dict, Set, Any, Optional
 from collections import defaultdict
 
 import paramiko
@@ -60,13 +60,13 @@ class SSHWorker:
         self.connection_info: ConnectionInfo = connection_info
 
         self.client: SSHClient = client
-        self.channel: Channel | None = None
+        self.channel: Optional[Channel] = None
         self.ssh_retry = 5
         self.set_ssh_channel()
 
         self.status: WorkerStatus = WorkerStatus.DISCONNECTED
-        self.awaitable_recv_client: asyncio.tasks.Task | None = None
-        self.awaitable_recv_ssh: asyncio.tasks.Task | None = None
+        self.awaitable_recv_client: Optional[asyncio.tasks.Task] = None
+        self.awaitable_recv_ssh: Optional[asyncio.tasks.Task] = None
 
     def __repr__(self):
         return self.__str__()

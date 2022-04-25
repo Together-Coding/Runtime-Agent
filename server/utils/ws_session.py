@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Optional
 from server import sio
 
 
@@ -19,7 +19,7 @@ async def update(sid: str, data: dict, namespaces: str = None) -> dict:
         return s
 
 
-async def clear(sid: str, exc: List[str] | None = None, namespaces: str = None) -> None:
+async def clear(sid: str, exc: Optional[List[str]] = None, namespaces: str = None) -> None:
     """ Clear sio session except ``exc`` keys """
 
     async with sio.session(sid, namespaces) as s:
