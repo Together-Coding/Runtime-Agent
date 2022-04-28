@@ -13,6 +13,8 @@ router = APIRouter()
 def pong():
     return api_response({
         'ping': 'pong',
+        'init': global_settings.SERVER_INIT,
+        'key_status': bool(global_settings.BRIDGE_KEY),
     })
 
 
@@ -38,9 +40,9 @@ def init_server(body: InitBody):
 
     # Save API key into `bridge_key` file. It's ok to save it like this because
     # it is only applicable to this server.
-    with open('bridge_key', 'wt') as fp:
+    with open(global_settings.BRIDGE_KEY_NAME, 'wt') as fp:
         fp.write(body.api_key)
-        read_bridge_key()
+    read_bridge_key()
 
     # Change user password randomly.
     pw = os_util.change_password()

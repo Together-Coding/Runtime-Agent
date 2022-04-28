@@ -28,3 +28,4 @@ class ErrorType:
     MISSING_FIELD = 'missing field'
     COMMON = 'common'
     SSH = 'ssh'
+    INIT_NEEDED = 'Init Needed'
