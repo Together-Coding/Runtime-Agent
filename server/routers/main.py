@@ -1,45 +1,63 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, dependencies, HTTPException
+from pydantic import BaseModel
 
+from configs import settings, global_settings, read_bridge_key
 from server.utils import os_util
 from server.utils.response import api_response
+from server.utils.auth import bridge_only
 
 router = APIRouter()
-
-# TODO 어떤 인증을 거쳐서 bridge 로부터
-#  "이 서버에서만 사용할 임시 키"를 받아서 사용하는게 더 안전할 듯
-
-# FIXME
-TEMP_DB = {}
 
 
 @router.get('/ping')
 def pong():
-    # Return useful values depending on its platform (local/container/...)
-    # IP address ?
-    # Docker image information ?
-    # Available languages?
-
     return api_response({
         'ping': 'pong',
+        'init': global_settings.SERVER_INIT,
+        'key_status': bool(global_settings.BRIDGE_KEY),
     })
+
+
+class InitBody(BaseModel):
+    api_key: str
 
 
 @router.post('/init')
-def init_server():
+def init_server(body: InitBody):
     """
-    TODO
     Initialize server at the first time this server is up.
-    The Runtime Bridge server will call this.
+    The Runtime Bridge server will call this path.
     """
 
+    # If already initialized, return error
+    if global_settings.SERVER_INIT is True:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                'type': 'Init Error',
+                'msg': 'Server is already initialized.'
+            })
+
+    # Save API key into `bridge_key` file. It's ok to save it like this because
+    # it is only applicable to this server.
+    with open(global_settings.BRIDGE_KEY_NAME, 'wt') as fp:
+        fp.write(body.api_key)
+    read_bridge_key()
+
+    # Change user password randomly.
     pw = os_util.change_password()
 
+    # Set as initialized
+    global_settings.SERVER_INIT = True
+
     return api_response({
-        'pw': pw
+        'username': settings.USERNAME,
+        'auth_type': 'password',
+        'auth': pw
     })
 
 
-@router.post('/execute')
+@router.post('/execute', dependencies=[Depends(bridge_only)])
 def execute_command():
     """
     TODO
@@ -55,7 +73,7 @@ def execute_command():
     return api_response({})
 
 
-@router.post('/execute/suspend')
+@router.post('/execute/suspend', dependencies=[Depends(bridge_only)])
 def suspend_execution():
     """
     TODO

@@ -3,7 +3,7 @@ import functools
 import requests
 from fastapi import APIRouter
 
-from configs import settings
+from configs import settings, global_settings
 from server import sio
 from server.utils import ws_session
 from server.websocket import InEvent, OutEvent, ErrorType
@@ -14,6 +14,24 @@ from server.utils.exceptions import SSHConnectionException
 router = APIRouter(prefix='/ssh')
 
 
+def server_init_required(func):
+    """
+    This server must be initialized first to process the decorated function.
+    Initialization is done by main.init_server at its startup.
+    """
+    @functools.wraps(func)
+    async def decorated(sid, data):
+        if not global_settings.SERVER_INIT or not global_settings.BRIDGE_KEY:
+            await sio.emit(OutEvent.ERROR,
+                           {'type': ErrorType.INIT_NEEDED,
+                            'message': 'Server is not initialized.'},
+                           room=sid)
+        else:
+            await func(sid, data)
+
+    return decorated
+
+
 def ws_auth_required(func):
     @functools.wraps(func)
     async def decorated(sid, data):
@@ -21,9 +39,8 @@ def ws_auth_required(func):
             await sio.emit(OutEvent.ERROR,
                            {'type': ErrorType.AUTH, 'message': 'Not authorized'},
                            room=sid)
-            return
-
-        return await func(sid, data)
+        else:
+            await func(sid, data)
 
     return decorated
 
@@ -95,18 +112,27 @@ async def authenticate(sid, data):
 
 @sio.on(InEvent.SSH_CONNECT)
 @ws_auth_required
+@server_init_required
 async def connect_to_ssh(sid, data=None):
     s = await sio.get_session(sid)
     user = User(user_id=s['userId'], ip=s['ip'])
 
-    # FIXME fetch SSH credentials from Bridge server
-    # resp = requests.get(bridge_server, ...
+    headers = {'X-API-KEY': global_settings.BRIDGE_KEY}
+    resp = requests.get(settings.BRIDGE_URL + f'/api/containers/info',
+                        headers=headers)
+    if not resp.ok:
+        # TODO: send sentry
+        return await sio.emit(OutEvent.ERROR,
+                              {'type': ErrorType.UNKNOWN,
+                               'message': f'Bridge is dead. ({resp.status_code})'},
+                              room=sid)
+    resp = resp.json()
     ssh_data = {
-        'cont_ip': '127.0.0.1',
-        'cont_user': 'together',
-        'cont_auth_type': 'password',
-        'cont_auth': 'ttest',
-        'cont_port': 22,
+        'cont_ip': '127.0.0.1',  # Fixed value
+        'cont_user': resp['cont_user'],
+        'cont_auth_type': resp['cont_auth_type'],
+        'cont_auth': resp['cont_auth'],
+        'cont_port': settings.SSH_PORT,  # Fixed value for now
     }
 
     try:
@@ -123,7 +149,7 @@ async def connect_to_ssh(sid, data=None):
     except SSHConnectionException as e:
         message = str(e)
     except:
-        message = 'Cannot connect to the SSH server.'
+        message = Reason.SSH_FAIL
 
     await sio.emit(OutEvent.ERROR,
                    {'type': ErrorType.SSH, 'message': message},
@@ -142,7 +168,3 @@ async def recv_from_client(sid, data):
 async def resize_pty(sid, data):
     ssh_worker: SSHWorker = await ws_session.get(sid, 'ssh')
     ssh_worker.resize_pty(data['cols'], data['rows'])
-
-# TODO
-#  - htop 명령 후 웹소켓 끊기고 다시 연결되어도, htop 응답을 계속 받게됨
-#  - 한글 안되는 듯

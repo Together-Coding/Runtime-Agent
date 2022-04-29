@@ -15,7 +15,11 @@ def change_password() -> Optional[str]:
     cmd = ['/usr/bin/passwd', settings.USERNAME]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
-    pw = rand_string(32)
+    if settings.FIXMED_PASSWORD:
+        pw = settings.FIXMED_PASSWORD
+    else:
+        pw = rand_string(32)
+
     p.stdin.write(f'{pw}\n{pw}\n'.encode())
     p.stdin.flush()
 
