@@ -28,7 +28,14 @@ async def bridge_only(api_key: Optional[str] = Header(None, alias='X-API-KEY')):
             detail={'type': 'Init Error', 'msg': 'Server needs to be re-initialized.'}
         )
     elif not api_key:
+        # API key is missing
         raise HTTPException(
             status_code=401,
-            detail={'type': 'Authorization Failed', 'msg': 'You are not authorized.'}
+            detail={'type': 'Authorization Failed', 'msg': 'X-API-KEY is missing'}
+        )
+    elif api_key != global_settings.BRIDGE_KEY:
+        # API key is mismatched
+        raise HTTPException(
+            status_code=401,
+            detail={'type': 'Authorization Failed', 'msg': 'Not authorized key'}
         )
