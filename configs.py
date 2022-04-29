@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # API related
     API_URL = 'http://api.together-coding.com'  # FIXME use HTTPS
-    BRIDGE_URL = 'http://127.0.0.1:8080' if global_settings.DEBUG else 'https://bridge.together-coding.com'
+    BRIDGE_URL = 'https://dev-bridge.together-coding.com' if global_settings.DEBUG else 'https://bridge.together-coding.com'
 
 
 settings = Settings()
