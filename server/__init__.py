@@ -1,11 +1,10 @@
 import importlib
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from configs import global_settings
 from server import routers
-from server.utils.exceptions import MissingRequiredException
 from server.websocket import create_websocket
 
 app = FastAPI()

@@ -15,6 +15,10 @@ router = APIRouter(prefix='/ssh')
 
 
 def server_init_required(func):
+    """
+    This server must be initialized first to process the decorated function.
+    Initialization is done by main.init_server at its startup.
+    """
     @functools.wraps(func)
     async def decorated(sid, data):
         if not global_settings.SERVER_INIT or not global_settings.BRIDGE_KEY:

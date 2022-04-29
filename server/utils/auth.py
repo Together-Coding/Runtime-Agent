@@ -6,6 +6,14 @@ from configs import global_settings
 
 
 async def bridge_only(api_key: Optional[str] = Header(None, alias='X-API-KEY')):
+    """
+    X-API-KEY is required. The only subject that knows API key is a Bridge server.
+    In order to check API key, this(Agent) server must be initialized first.
+
+    When this server is initialized, api key is saved into config, named `BRIDGE_KEY`, 
+    api key is in header `X-API-KEY`, and the api key is same with `BRIDGE_KEY`,
+    then the request is authorized.
+    """
     if not global_settings.SERVER_INIT:
         # Server is not initialized.
         raise HTTPException(
