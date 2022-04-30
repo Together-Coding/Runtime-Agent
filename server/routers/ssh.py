@@ -120,12 +120,18 @@ async def connect_to_ssh(sid, data=None):
     headers = {'X-API-KEY': global_settings.BRIDGE_KEY}
     resp = requests.get(settings.BRIDGE_URL + f'/api/containers/info',
                         headers=headers)
+
     if not resp.ok:
         # TODO: send sentry
-        return await sio.emit(OutEvent.ERROR,
-                              {'type': ErrorType.UNKNOWN,
-                               'message': f'Bridge is dead. ({resp.status_code})'},
-                              room=sid)
+        try:
+            reason = resp.json()['error']
+        except:
+            reason = f'Bridge is dead. ({resp.status_code})'
+        await sio.emit(OutEvent.ERROR,
+                       {'type': ErrorType.UNKNOWN, 'message': reason},
+                       room=sid)
+        return
+
     resp = resp.json()
     ssh_data = {
         'cont_ip': '127.0.0.1',  # Fixed value
