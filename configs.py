@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     SSH_PORT = 22
 
     # API related
-    API_URL = 'http://api.together-coding.com'  # FIXME use HTTPS
+    API_URL = 'https://api.together-coding.com'
     BRIDGE_URL = 'https://dev-bridge.together-coding.com' if global_settings.DEBUG else 'https://bridge.together-coding.com'
 
 
