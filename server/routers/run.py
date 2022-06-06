@@ -14,6 +14,8 @@ router = APIRouter(prefix="/run")
 
 class StartBody(BaseModel):
     target_ptc_id: int
+    course_id: int
+    lesson_id: int
 
 
 @router.post('/start')
@@ -21,8 +23,8 @@ def start_run(body: StartBody, auth: str = Header(alias='Authorization', default
     headers = {
         'Authorization': auth
     }
-    url = settings.WS_URL
-
+    
+    url = settings.WS_URL + f"/api/{body.course_id}/{body.lesson_id}/{body.target_ptc_id}"
     resp = requests.post(url, json={
         'target_ptc_id': body.target_ptc_id,
     }, headers=headers)
