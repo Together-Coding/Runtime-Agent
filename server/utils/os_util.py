@@ -15,7 +15,7 @@ def change_password() -> Optional[str]:
     cmd = ['/usr/bin/passwd', settings.USERNAME]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
-    if not global_settings.DEBUG and settings.FIXMED_PASSWORD:
+    if global_settings.DEBUG and settings.FIXMED_PASSWORD:
         pw = settings.FIXMED_PASSWORD
     else:
         pw = rand_string(32)
