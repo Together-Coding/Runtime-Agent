@@ -10,19 +10,20 @@ from server.websocket import create_websocket
 app = FastAPI()
 sio, sio_app = create_websocket(app)
 
-origins = ['https://together-coding.com']
-if global_settings.DEBUG:
-    origins.extend([
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-    ])
+origins = ['https://together-coding.com', ]
+# if global_settings.DEBUG:
+origins.extend([
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+])
 
 app.add_middleware(
     CORSMiddleware,
+    # allow_origins=origins,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=['*'],
-    allow_headers=['X-API-KEY']
+    allow_headers=['X-API-KEY', 'Authorization']
 )
 
 for router_mod in routers.__all__:

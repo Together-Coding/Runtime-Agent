@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # API related
     API_URL = 'https://api.together-coding.com'
     BRIDGE_URL = 'http://localhost:8080' if global_settings.DEBUG else 'https://bridge.together-coding.com'
+    WS_URL = 'https://ide-ws.together-coding.com'
 
 
 settings = Settings()
