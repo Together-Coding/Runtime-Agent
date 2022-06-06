@@ -3,7 +3,7 @@ from subprocess import TimeoutExpired
 from typing import Optional
 
 from server.utils.etc import rand_string
-from configs import settings
+from configs import settings, global_settings
 
 
 def change_password() -> Optional[str]:
@@ -15,7 +15,7 @@ def change_password() -> Optional[str]:
     cmd = ['/usr/bin/passwd', settings.USERNAME]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
-    if settings.FIXMED_PASSWORD:
+    if not global_settings.DEBUG and settings.FIXMED_PASSWORD:
         pw = settings.FIXMED_PASSWORD
     else:
         pw = rand_string(32)
