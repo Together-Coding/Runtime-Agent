@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     AGENT_DIRECTORY: str = os.getcwd() if global_settings.DEBUG else '/usr/src/agent'
     USER_DIRECTORY: str = os.getcwd() if global_settings.DEBUG else '/usr/src/app'
     USERNAME: str = 'together'
-    FIXMED_PASSWORD: Union[str, bool] = 'ttest' if global_settings.DEBUG else False
+    FIXMED_PASSWORD: Union[str, bool] = 'ttest' if global_settings.DEBUG else ""
     SSH_PORT = 22
     SSH_DEFAULT_DIR = "/usr/src/app"
 

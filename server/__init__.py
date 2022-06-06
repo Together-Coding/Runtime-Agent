@@ -10,12 +10,7 @@ from server.websocket import create_websocket
 app = FastAPI()
 sio, sio_app = create_websocket(app)
 
-origins = ['https://together-coding.com', '*']
-# if global_settings.DEBUG:
-origins.extend([
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-])
+origins = ['*']
 
 app.add_middleware(
     CORSMiddleware,
