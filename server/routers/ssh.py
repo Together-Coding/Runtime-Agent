@@ -167,7 +167,7 @@ async def connect_to_ssh(sid, data=None):
 async def recv_from_client(sid, data):
     ssh_worker: SSHWorker = await ws_session.get(sid, 'ssh')
     await ssh_worker.recv_from_client(data)
-
+    
 
 @sio.on(InEvent.SSH_RESIZE)
 @ws_auth_required

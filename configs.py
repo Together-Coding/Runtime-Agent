@@ -21,10 +21,11 @@ class Settings(BaseSettings):
     USERNAME: str = 'together'
     FIXMED_PASSWORD: Union[str, bool] = 'ttest' if global_settings.DEBUG else False
     SSH_PORT = 22
+    SSH_DEFAULT_DIR = "/usr/src/app"
 
     # API related
     API_URL = 'https://api.together-coding.com'
-    BRIDGE_URL = 'https://dev-bridge.together-coding.com' if global_settings.DEBUG else 'https://bridge.together-coding.com'
+    BRIDGE_URL = 'http://localhost:8080' if global_settings.DEBUG else 'https://bridge.together-coding.com'
 
 
 settings = Settings()

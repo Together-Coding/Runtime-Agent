@@ -13,6 +13,7 @@ from paramiko import (
     AutoAddPolicy,
 )
 from paramiko.channel import Channel
+from configs import Settings
 
 from server import sio
 from server.utils import ws_session
@@ -273,7 +274,7 @@ def ssh_connect(
                        port=port,
                        compress=True,
                        )
-
+        client.exec_command(f"cd {Settings.SSH_DEFAULT_DIR}")
     except paramiko.AuthenticationException:
         raise SSHConnectionException(Reason.SSH_AUTH_FAIL)
     except Exception as e:

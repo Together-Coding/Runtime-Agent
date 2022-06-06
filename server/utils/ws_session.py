@@ -1,4 +1,5 @@
-from typing import List, Any, Optional
+from typing import Any, List, Optional
+
 from server import sio
 
 
