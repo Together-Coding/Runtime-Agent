@@ -55,32 +55,3 @@ def init_server(body: InitBody):
         'auth_type': 'password',
         'auth': pw
     })
-
-
-@router.post('/execute', dependencies=[Depends(bridge_only)])
-def execute_command():
-    """
-    TODO
-    Execute pre-execution processes. This endpoint is called before execution of codes.
-
-    Steps
-    1. Clear app directory
-    2. Download user's project codes from DB
-    3. Execute pre-execute processes
-        e.g. install packages
-    """
-
-    return api_response({})
-
-
-@router.post('/execute/suspend', dependencies=[Depends(bridge_only)])
-def suspend_execution():
-    """
-    TODO
-    Pre-suspension processes. This endpoint is called before suspension.
-
-    Steps
-    1. ...
-    """
-
-    return api_response({})
